@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Webpack starter kit</title>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo-container">
+        <a href="#">
+          <img class="logo" src="../images/icon.svg" alt="app-logo" />
+        </a>
+      </div>
+
+      <div class="user-info">
+        <div id="user-email"></div>
+
+        <div id="total-emails"></div>
+      </div>
+
+      <div class="options">
+        <div id="sign-out" class="option" style="display: none">
+          <img
+            class="filter-blue"
+            src="../images/sign-out.svg"
+            alt="logout icon"
+          />
+        </div>
+        <div id="sign-in" class="option">
+          <img
+            class="filter-blue"
+            src="../images/sign-in.svg"
+            alt="login icon"
+          />
+        </div>
+      </div>
+      <button id="threads_button">
+        <img
+          class="refresh filter-blue"
+          src="../images/refresh.svg"
+          alt="refresh button"
+        />
+      </button>
+    </header>
+    <div class="loader_bg">
+      <div class="loader" style="display: block">
+        <img src="../images/just-mail.svg" alt="envelope" />
+      </div>
+      <div class="loading-text">Loading ...</div>
+    </div>
+
+    <main class="main-table">
+      <section class="all-senders">
+        <table id="topSendersTbl">
+          <tr>
+            <th>
+              Contacts
+              <div id="sortAlphUp" class="sortTriangle">&#9650;</div>
+              <div id="sortAlphDown" class="sortTriangle">&#9660;</div>
+            </th>
+            <th>Names</th>
+            <th>
+              Emails №
+              <div id="sortNumUp" class="sortTriangle">&#9650;</div>
+              <div id="sortNumDown" class="sortTriangle">&#9660;</div>
+            </th>
+            <th>Ids</th>
+            <th>Delete</th>
+          </tr>
+      
+      </table>
+  </section>
+   <section class="selective">
+    <button class="back">
+        Return to All
+    </button>
+    <table id="selectiveTbl">
+        <tr>
+            <th>Subjects <div id="sortAlphUpSelective" class="sortTriangle"> &#9650;</div>
+                <div id="sortAlphDownSelective" class="sortTriangle">&#9660;</div>
+            </th>
+            <th>Emails №<div id="sortNumUpSelective" class="sortTriangle"> &#9650;</div>
+                <div id="sortNumDownSelective" class="sortTriangle">&#9660;</div>
+            <th>
+              Emails №
+              <div id="sortNumUp" class="sortTriangle">&#9650;</div>
+              <div id="sortNumDown" class="sortTriangle">&#9660;</div>
+            </th>
+            <th>Ids</th>
+            <th>Delete</th>
+          </tr>
+        </table>
+      </section>
+     
+      <div class="modal-box">
+        <button class="closeBtn">x</button>
+
+        <h3>Do you want to delete your emails permamently?</h3>
+        <button class="btn-delete">Delete</button>
+        <h3>Do you want to move your emails to trash?</h3>
+        <button class="btn-trash">Trash</button>
+      </div>
+      <div class="modal-trash-info">
+        <button class="close">x</button>
+        <button class="btn-untrash">untrash</button>
+        <h3 class="info-text"></h3>
+      </div>
+      <div class="modal-error">
+        <button class="errorCls">x</button>
+        <h3 class="error-message"></h3>
+      </div>
+      <div class="modal-loader">
+        <div class="loader-broom">
+          <img src="../images/light-dust-broom.svg" alt="broom" />
+        </div>
+      </div>
+
+      <div id="info"></div>
+    </main>
+  </body>
+</html>

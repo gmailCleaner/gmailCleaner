@@ -1,4 +1,4 @@
-import { getData, getDataSubjects } from './topTable';
+import {getEmailProfile} from './gmailConnector';
 import Bottleneck from 'bottleneck';
 
 const modalBox = document.querySelector('.modal-box');
@@ -7,17 +7,17 @@ const infoText = document.querySelector('.info-text');
 
 const modalError = document.querySelector('.modal-error');
 const errorMessage = document.querySelector('.error-message')
+const modalLoader = document.querySelector('.modal-loader');
 
 const closeBtn = document.querySelector('.closeBtn')
 const btnDelete = document.querySelector('.btn-delete');
 const btnTrash = document.querySelector('.btn-trash');
+const btnUnTrash = document.querySelector('.btn-untrash');
+
 const closeInfoModal = document.querySelector('.close');
 const errorCls = document.querySelector('.errorCls');
 
-
-modalBox.style.display = "none";
-modalInfo.style.display = 'none';
-modalError.style.display = "none";
+modalLoader.style.display = "none";
 
 const popUp = () => {
     modalBox.style.display = "block";
@@ -29,6 +29,10 @@ const popUp = () => {
 const infoPopUp = () => {
     modalBox.style.display = "none";
     modalInfo.style.display = 'block';
+
+    if (!modalLoader.closed) {
+        modalLoader.style.display = "none";
+    }
     closeInfoModal.addEventListener('click', () => {
         modalInfo.style.display = "none";
     })
@@ -52,20 +56,27 @@ const errorPopUp = () => {
 
 const limiter = new Bottleneck({
     maxConcurrent: 1,
-    minTime: 50
+    minTime: 1500
 })
 
-let threadsInBatches = [];
 
 const batchThreads = () => {
     let batch = gapi.client.newBatch();
-    threadsInBatches.push(batch);
-    return batch
+    return batch;
 }
 
+
+
+
+const unTrash = (threads, row) => {
+    for (let i = 0; i < threads.length; i++) {
+        untrashById(threads[i]);
+       }
+    
+       row.style.display = "";
+}
 const listBatches = (threads, action, row) => {
-    console.log(threads)
-    let allThreads = [];
+    let start = Date.now();
     let batch = batchThreads();
     let threadsBatches = []
 
@@ -92,15 +103,13 @@ const listBatches = (threads, action, row) => {
             limiter.schedule(() => {
                 batch.then(function (resp) {
                     let items = resp.result
-                    console.log(items)
                     Object.values(items).forEach(item => {
-                        let threadItem = item.result.id
-                        if (item.result.error) {
+                        if (item.status == '204' || item.status == '200') {
+                            resolve(item.status)
+                        }
+                        else {
                             errorPopUp();
-                            reject(item.result.error)
-                        } else {
-                            allThreads.push(threadItem)
-                            resolve(threadItem)
+                            reject(item.status)
                         }
                     })
 
@@ -114,8 +123,18 @@ const listBatches = (threads, action, row) => {
     Promise.allSettled(nextPromises).then(() => {
         row.style.display = "none";
         infoPopUp();
-
+        addMessage(action, threads.length);
+        getEmailProfile();
     })
+    let end = Date.now();
+    let functionTime = end - start;
+    if (functionTime > 3) {
+        modalLoader.style.display = "flex";
+        if (!modalBox.closed) {
+            modalBox.style.display = "none";
+        }
+    }
+
 }
 
 function deleteById(id) {
@@ -132,36 +151,64 @@ function trashById(id) {
     })
 }
 
+function untrashById(id) {
+    gapi.client.gmail.users.threads.untrash({
+        'userId': 'me',
+        'id': id
+    })
+.then(function (response) {
+      return response.result;
+    });
+}
+
+function addMessage(action, number) {
+    infoText.innerText = `${number} messages  \r\n`;
+    // infoText.innerText += `${cells[0].innerText} \r\n`;
+    if (action === "delete") {
+        infoText.innerText += `were deleted permamently`;
+    } else if (action === "trash") {
+        infoText.innerText += `were moved to trash`;
+    }
+}
 
 
-window.deleteAllAct = function (id) {
-    let myid = id.replace('delete-', '');
-    let cells = topSendersTbl.rows[myid].cells;
-    let threads = cells[2].innerText.split(',');
-    let row = document.getElementById('row-' + myid);
-    popUp();
+window.deleteAllAct = function (id, isSelective) {
 
-    const addMessage = (action, number) => {
-        infoText.innerText = `${number} messages from \r\n`;
-        infoText.innerText += `${cells[0].innerText} \r\n`;
-        if (action === "delete") {
-            infoText.innerText += `were deleted permamently`;
-        } else if (action === "trash") {
-            infoText.innerText += `were moved to trash`;
-        }
+    let myid = id.replace('p-delete-', '');
+    
+    if(isSelective){
+        myid = id.replace('s-delete-', '')
     }
 
-    btnTrash.addEventListener('click', function toTrash() {
+    let cells = topSendersTbl.rows[myid].cells;
+    if(isSelective){
+        cells = selectiveTbl.rows[myid].cells;
+    }
+    let threads = cells[2].innerText.split(',');
+
+    let row = document.getElementById('p-row-' + myid);
+    if(isSelective)
+    {
+        row =  document.getElementById('s-row-' + myid);
+    }
+    popUp();
+
+    let trashHandler = function(event){
         listBatches(threads, "trash", row);
-        addMessage("trash", threads.length);
-        threads.length = 0;
+        btnDelete.removeEventListener('click', deleteHandler,{once:true});
+    };
 
-    });
-
-    btnDelete.addEventListener('click', function deleteEmails() {
+    let deleteHandler = function(event){
         listBatches(threads, "delete", row);
-        addMessage("delete", threads.length);
-        // threads.length = 0;
-    });
+        btnTrash.removeEventListener('click', trashHandler,{once:true});
+    }
+
+    let unTrashHandler = function(event){
+        unTrash(threads, row);
+        btnUnTrash.removeEventListener('click', unTrashHandler,{once:true});
+    }
+    btnTrash.addEventListener('click', trashHandler, { once: true });
+    btnDelete.addEventListener('click', deleteHandler, { once: true });
+    btnUnTrash.addEventListener('click', unTrashHandler, { once: true });
 
 }
