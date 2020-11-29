@@ -161,9 +161,16 @@ function listThreadsWrapper()
   listThreads(batches,maxCnt,null,myPromises)
 }
 
+
+let resolvedBatch = 1;
+
 function listThreads(batches, maxCnt, nextPageToken,myPromises) {
   document.querySelector('.loader_bg').style.display ="";
   document.querySelector('.loader').style.display = "block";
+
+  let progressElem = document.getElementById('progress');
+  let progress = 0;
+
   let batch = createNewBatch();
   batches.push(batch);
   let allEmails = [];
@@ -191,14 +198,23 @@ function listThreads(batches, maxCnt, nextPageToken,myPromises) {
 
       let nextPageToken = response.result.nextPageToken;
 
+      resolvedBatch++;
+      progress  = Math.floor(resolvedBatch  /23  * 100);
+      progressElem.innerHTML = 'progress ' + progress + '%';
       if (nextPageToken  > 0 && maxCnt-->0) {
         listThreads(batches,maxCnt,nextPageToken,myPromises);
 
       } else {
+
         batches.forEach((batch) => {
           let promise = new Promise(function (resolve, reject) {
             limiter.schedule(() => {
               batch.then(function (resp) {
+                
+                
+                resolvedBatch++;
+                progress  = Math.floor(resolvedBatch  /23 * 100);
+                progressElem.innerHTML = 'progress ' + progress + '%';
                 let items = resp.result;
                 Object.values(items).forEach((item) => {
                   let threadid = item.result.id;
