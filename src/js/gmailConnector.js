@@ -242,7 +242,10 @@ function listThreads(batches, maxCnt, nextPageToken,myPromises) {
 
         
         Promise.allSettled(myPromises).then(() => {
+          const loaderBg = document.querySelector('.loader_bg');
+          loaderBg.style.display = "none";
           getEmailProfile()
+
         });
       }
     } else {

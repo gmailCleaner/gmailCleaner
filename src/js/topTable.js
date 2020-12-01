@@ -5,6 +5,7 @@ let topTblData = [];
 let selectiveTblData = [];
 
 const loaderBg = document.querySelector('.loader_bg');
+const loaderTxt = document.querySelector('.loading-text');
 
 
 function getData(extData) {
@@ -81,7 +82,9 @@ function orderData(inTable, data, isSelective) {
     countRows++
   }
   if (countRows > 1) {
-    loaderBg.style.display = "none";
+    loaderBg.style.background = 'transparent';
+    loaderTxt.style.color = 'black';
+    
   }
 }
 
