@@ -6,6 +6,7 @@ import {initEventListeners} from './checkboxSelection.js'
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const API_KEY = process.env.API_KEY;
+const MAX_THREADS = 10;
 const DISCOVERY_DOCS = [
   "https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest",
 ];
@@ -70,7 +71,7 @@ function handleAuthClick() {
 function handleSignoutClick() {
   gapi.auth2.getAuthInstance().signOut();
 }
-function threadsGeMetatReq(id) {
+function threadsGeMetaReq(id) {
   return gapi.client.gmail.users.threads.get({
     userId: "me",
     id: id,
@@ -154,7 +155,7 @@ function getSubjectById(id) {
 
 function listThreadsWrapper()
 {
-  let maxCnt = 2;
+  let maxCnt = MAX_THREADS;
   let batches = [];
   let myPromises = []
 
@@ -162,7 +163,7 @@ function listThreadsWrapper()
 }
 
 
-let resolvedBatch = 1;
+let resolvedBatch = 0;
 
 function listThreads(batches, maxCnt, nextPageToken,myPromises) {
   document.querySelector('.loader_bg').style.display ="";
@@ -192,14 +193,15 @@ function listThreads(batches, maxCnt, nextPageToken,myPromises) {
     if (threads && threads.length > 0) {
       for (let i = 0; i < threads.length; i++) {
         let thread = threads[i];
-        let val = threadsGeMetatReq(thread.id);
+        let val = threadsGeMetaReq(thread.id);
         batch.add(val);
       }
 
       let nextPageToken = response.result.nextPageToken;
 
       resolvedBatch++;
-      progress  = Math.floor(resolvedBatch  /23  * 100);
+      
+      progress  = Math.floor((resolvedBatch  /(MAX_THREADS*2 ))  * 100);
       progressElem.innerHTML = 'progress ' + progress + '%';
       if (nextPageToken  > 0 && maxCnt-->0) {
         listThreads(batches,maxCnt,nextPageToken,myPromises);
@@ -213,7 +215,8 @@ function listThreads(batches, maxCnt, nextPageToken,myPromises) {
                 
                 
                 resolvedBatch++;
-                progress  = Math.floor(resolvedBatch  /23 * 100);
+
+                progress  = Math.floor((resolvedBatch  / (MAX_THREADS*2 )) * 100);
                 progressElem.innerHTML = 'progress ' + progress + '%';
                 let items = resp.result;
                 Object.values(items).forEach((item) => {
