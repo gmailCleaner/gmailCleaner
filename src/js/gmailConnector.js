@@ -201,7 +201,7 @@ function listThreads(batches, maxCnt, nextPageToken,myPromises) {
 
       resolvedBatch++;
       
-      progress  = Math.floor((resolvedBatch  /(MAX_THREADS*2 ))  * 100);
+      progress  = Math.floor((resolvedBatch  /(MAX_THREADS*2 + 2))  * 100);
       progressElem.innerHTML = 'progress ' + progress + '%';
       if (nextPageToken  > 0 && maxCnt-->0) {
         listThreads(batches,maxCnt,nextPageToken,myPromises);
@@ -216,7 +216,7 @@ function listThreads(batches, maxCnt, nextPageToken,myPromises) {
                 
                 resolvedBatch++;
 
-                progress  = Math.floor((resolvedBatch  / (MAX_THREADS*2 )) * 100);
+                progress  = Math.floor((resolvedBatch  / (MAX_THREADS*2 + 2)) * 100);
                 progressElem.innerHTML = 'progress ' + progress + '%';
                 let items = resp.result;
                 Object.values(items).forEach((item) => {

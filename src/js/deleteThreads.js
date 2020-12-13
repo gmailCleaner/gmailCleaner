@@ -75,6 +75,9 @@ const unTrash = (threads, row) => {
        }
     
        row.style.display = "";
+       //need to put getEmailProfile after ensuring all above was finished
+       getEmailProfile();
+
 }
 const listBatches = (threads, action, row) => {
     let start = Date.now();
@@ -164,12 +167,15 @@ function trashById(id) {
 }
 
 function untrashById(id) {
+    //todo: support many calls with batching
+
     gapi.client.gmail.users.threads.untrash({
         'userId': 'me',
         'id': id
     })
 .then(function (response) {
       return response.result;
+      
     });
 }
 
@@ -275,7 +281,7 @@ window.deleteAllAct = function (id, isSelective) {
         }
     
         let unTrashHandler = function(event){
-            unTrash(threads, row);
+            unTrash(threads.split(','), row);
             btnUnTrash.removeEventListener('click', unTrashHandler,{once:true});
         }
         btnTrash.addEventListener('click', trashHandler, { once: true });
